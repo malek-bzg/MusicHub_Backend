@@ -6,6 +6,16 @@ const MusicProjeSctchema = new mongoose.Schema({
         required: true
     },
  
+    style:{
+        type:String,
+        required:true
+    },
+    
+    photo: {
+        type: String,
+       // default: "http://localhost:3000/upload/default-profile.png",
+        required: false
+    },
 
     type:{
         type:String,// privet wala public 
@@ -14,8 +24,22 @@ const MusicProjeSctchema = new mongoose.Schema({
  
 
     user:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        type:String,
+        required:true
+        //type: mongoose.Schema.Types.ObjectId,
+       // ref: 'User'
+    },
+
+    userpv:[{
+        type:String,
+       // required:false
+        //type: mongoose.Schema.Types.ObjectId,
+       // ref: 'User'
+    }],
+    mixx:{
+        type:String,
+        required:false
+        
     }
     
 },

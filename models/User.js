@@ -2,14 +2,25 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
-    firstName: { type: String },
-    lastName: { type: String },
+    username: {
+      type: String,
+      required: true
+  },
 
-    email: { type: String },
-  
-    password: { type: String },
- 
-    profilePicture: { type: String },
+
+    email:{
+      type: String,
+      required: true
+  },
+    password:{
+      type: String,
+      required: true
+  },
+  photoProfil: {
+      type: String,
+     // default: "http://localhost:3000/upload/default-profile.png",
+      required: false
+  },
     isVerified: { type: Boolean },
    
   },

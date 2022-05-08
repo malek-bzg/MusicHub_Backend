@@ -7,6 +7,7 @@ const config = require("./config.json")
 const bodyParser = require("body-parser")
 const path = require("path");
 const morgan = require("morgan")
+const MusicProject = require("./models/MusicProject")
 
 app.use(morgan('combined'))
 
@@ -18,12 +19,15 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 
-app.use("/api/panier", require("./routes/panier-route"))
 app.use("/api/user", require("./routes/user-route"))
 app.use("/api/musicproject", require("./routes/musicproject-route"))
+app.use("/api/track",require("./routes/track-route"))
+app.use("/api/band",require("./routes/band-route"))
+app.use('/upload', express.static(path.join(__dirname, 'upload')))
+
 
 mongoose.Promise = global.Promise
-mongoose.connect(config.database, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect("mongodb://127.0.0.1:27017/dali")
   .then(
     () => {
       console.log("Connecté a la base de données")
@@ -48,3 +52,12 @@ if (process.env.NODE_ENV === "produition") {
 
 app.listen(port, () => console.log(`Server up and running on port ${port} !`))
 //mongodb+srv://peddler:peddler-cred@cluster0.ialfx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+ //"database" : "mongodb://127.0.0.1:27017",
+
+
+
+
+
+
+ //yaya 
+ //yahya arour

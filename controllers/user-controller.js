@@ -4,6 +4,7 @@ const config = require("../config.json");
 const bcypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const fs = require("fs");
+const MusicProject = require("../models/MusicProject");
 
 ///// LINKS ---------------------------------------------------------
 
@@ -26,16 +27,15 @@ exports.getUserByToken = async (req, res) => {
 
 
 exports.register = async (req, res) => {
-  console.log("1111")
+  
   const {
-    firstName,
-    lastName,
+   username,
 
     email,
 
     password,
 
-    profilePicture,
+    //photoProfil,
 
   } = req.body;
 
@@ -44,28 +44,36 @@ exports.register = async (req, res) => {
   } else {
     const nouveauUser = new User();
 
-    nouveauUser.firstName = firstName;
-    nouveauUser.lastName = lastName;
-    //nouveauUser.cin = cin;
+    nouveauUser.username = username;
+  
+   
     nouveauUser.email = email;
-    //nouveauUser.address = address;
+    
     nouveauUser.password = await bcypt.hash(password, 10);
-   // nouveauUser.phoneNumber = phoneNumber;
-    nouveauUser.profilePicture = profilePicture;
+   
     nouveauUser.isVerified = true;
-    //nouveauUser.role = role;
+   
+    try{
+    nouveauUser.photoProfil =`${req.protocol}://${req.get('host')}/upload/${req.file.filename}`
+   }catch{
+   
+    nouveauUser.photoProfil ="http://localhost:3000/upload/default-profile.png"
+   }
+
+    
+    
 
     nouveauUser.save();
 
-    const token = jwt.sign({ email: email }, config.token_secret, {
-      expiresIn: "36000000",
+    const token = jwt.sign({ nouveauUser:nouveauUser }, config.token_secret, {
+     // expiresIn: "36000000",
     });
 
-    doSendConfirmationEmail(email, token);
+   // doSendConfirmationEmail(email, token);
 
     res.status(201).send({
       message: "success",
-      user: nouveauUser,
+      //user: nouveauUser,
       token: jwt.verify(token, config.token_secret),
     });
   }
@@ -75,17 +83,20 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-
+  console.log("-----------------------------------------")
+//console.log(user._id)
+const _id = user.id;
   if (user && (await bcypt.compare(password, user.password))) {
-    const token = jwt.sign({ email: email }, config.token_secret, {
-      expiresIn: "36000000",
+    const token = jwt.sign({ user: user }, config.token_secret, {
+     
     });
 
     if (user.isVerified) {
       console.log("1111111")
-      res.status(200).send({ token, user, message: "Success" });
+      res.status(200).send({ _id, message: "Success" });
+      
     } else {
-      res.status(200).send({ user, message: "Email not verified" });
+      res.status(200).send({ _id, message: "Email not verified" });
     }
   } else {
     res.status(403).send({ message: "Password or email incorrect" });
@@ -93,7 +104,7 @@ exports.login = async (req, res) => {
 };
 
 exports.loginWithSocial = async (req, res) => {
-  const { email, firstName, lastName } = req.body;
+  const { email,username } = req.body;
 
   if (email === "") {
     res.status(403).send({ message: "Error please provide an email" });
@@ -105,11 +116,9 @@ exports.loginWithSocial = async (req, res) => {
       console.log("user does not exists, creating an account");
 
       user = new User();
-
+      user.username = username;
       user.email = email;
-      user.firstName = firstName;
-      user.lastName = lastName;
-      //user.role = "Client";
+    
       user.isVerified = true;
 
       user.save();
@@ -202,7 +211,7 @@ exports.forgotPassword = async (req, res) => {
 };
 
 exports.editProfile = async (req, res) => {
-  const { firstName, lastName, cin, email, address, phoneNumber } = req.body;
+  const { firstName, lastName, email } = req.body;
 
   let user = await User.findOneAndUpdate(
     { email: email },
@@ -214,23 +223,25 @@ exports.editProfile = async (req, res) => {
         email: email,
        // address: address,
        // phoneNumber: phoneNumber,
-      },
+      }, 
     }
   );
+  console.log("bien")
 
   res.send({ user });
 };
 
 exports.editProfilePicture = async (req, res, next) => {
+  console.log(req.body.email)
   let user = await User.findOneAndUpdate(
     { email: req.body.email },
     {
       $set: {
-        profilePicture: req.file.filename,
+       photoProfil :`${req.protocol}://${req.get('host')}/upload/${req.file.filename}`
       },
     }
   );
-
+  console.log(req.file.filename)
   res.send({ user });
 };
 
@@ -250,6 +261,22 @@ exports.deleteAll = async (req, res) => {
     return res.status(204).send({ message: "Aucun element" });
   });
 };
+
+
+exports.my_branch_in = async (req, res, next) => {
+  const filters = req.query;
+  const mp = await User.find();
+  const filteredmusicproject = mp.filter(musicproject => {
+    let isValid = true;
+    for (key in filters) {
+      console.log(key, musicproject[key], filters[key]);
+      isValid = isValid && musicproject[key] == filters[key];
+    }
+    return isValid;
+  });
+  res.send(filteredmusicproject);
+};
+
 
 ///// FUNCTIONS ---------------------------------------------------------
 
@@ -335,3 +362,18 @@ async function doSendConfirmationEmail(email, token) {
     }
   });
 }
+
+
+
+exports.getMy_pub = async (req, res) => {
+  console.log(req.params.idk)
+ // console.log( req.body.type)
+  MusicProject.find({ user: req.params.id }).exec((err,  musicProject)=>{
+  
+    MusicProject.find({ type:  req.params.idk }).exec((err,  musicproject)=>{
+     // console.log(req.params.id)
+        res.send(musicProject);
+      })
+  })
+
+};

@@ -1,63 +1,42 @@
 const express = require("express")
 const router = express.Router()
-const PanierController = require("../controllers/musicproject-controller")
-const upload = require('../middlewares/storage');
+const MpController = require("../controllers/musicproject-controller")
+//const upload = require('../middlewares/storage');
 const MusicProject = require("../models/MusicProject");
+const multer = require('../multer-config')
 
 router.route("/")
 
-    .get(PanierController.getAll)
+    .get(MpController.getAll)
    
-    .post( PanierController.add)
+    .post( multer,MpController.add)
   
-    .put( PanierController.edit)
+    .put( MpController.edit)
   
-    .delete(PanierController.delete)
+    .delete(MpController.delete)
   
-router.delete("/all", PanierController.deleteAll)
-//router.get("/get-my",PanierController.getMy)
+router.delete("/all", MpController.deleteAll)
+
+// tafichilek les  repo el kol  mta3 el user 
+router.get("/get-my/:id",MpController.getMy)
 
 
+// tafichilek les  repo el public mta3 el user   localhost:3000/api/musicproject/get-my-public?type=public&user=123   
+router.get("/mp-filter?",MpController.getMy_pub)
 
 
+//tzid taswira ll MusicPro
+router.put("/edit-Music-picture",multer, MpController.editMusicProjPicture)
+
+//-------------------------------------------------
+router.post("/send-inv", MpController.sendConfirmationEmail)
+router.get("/confirmation/:token/:pr", MpController.confirmation)
+
+//--------------------------------------------------
 
 
+ 
 
-
-
-router.get("/get-my",PanierController.getMy,async (req,res) => {
-    console.log("11")
-    res.json({prods:res.prods})
-})
-
-
-
-
-
-
-
-
-/*router.get ('/myProds:id',getProdsByUser,async (req,res) => {
-    console.log("11")
-    res.json({prods:res.prods})
-})
-
-async function getProdsByUser  (req,res,next){
-    console.log("11-----------")
-    let prods
-    try {
-        prods = await MusicProject.find({ user: req.params.id }).populate('User')
-        if (prods == null){
-            res.json({message:"sans produits"})
-        }
-    } catch (error) {
-        res.json({message:error.message})
-
-    }
-    res.prods = prods
-    next()
-}
-*/
-
+router.delete("/user-out",MpController.deleteuser)
 
 module.exports = router
